@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pocket_storage/pages/categoria.dart';
 import 'dart:async';
 
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -56,14 +57,115 @@ class _MyAppState extends State<MyApp> {
     var arqNome = getNome(file.path);
     var q = await db.query('registro', where: "nome == '$arqNome'");
     if (q.length == 0) {
-      var appDir = await getApplicationDocumentsDirectory();
-      var dir = "${appDir.path}/$arqNome";
+      // var appDir = await getApplicationDocumentsDirectory();
+      // var dir = "${appDir.path}/$arqNome";
 
-      // TODO salvar arquivo e dps salvar no banco
-      File arq = await File(file.path).copy(dir).then((value) => db.insert(
-          'registro', {'path': dir, 'nome': arqNome}).then((value) => null));
-      print("variavel arquivo inserido no banco e copiado para celular");
-      buscar();
+      // // TODO salvar arquivo e dps salvar no banco
+      // File arq = await File(file.path).copy(dir).then((value) => db.insert(
+      //     'registro', {'path': dir, 'nome': arqNome, 'categoria': categoria}).then((value) => null));
+      // print("variavel arquivo inserido no banco e copiado para celular");
+      // mostrar dialog p pegar categoria
+      TextEditingController c = TextEditingController();
+      await showDialog(
+        context: context,
+        builder: (context) {
+          print('Variavel categorias: ${categorias}');
+          return AlertDialog(
+            title: Text(
+                "Digite ou selecione a categoria para o vídeo ${arqNome.split('.')[0]}"),
+            content: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  child: TextField(
+                    focusNode: FocusNode()..requestFocus(),
+                    decoration: InputDecoration(
+                        labelText: "Digite o nome da categoria"),
+                    controller: c,
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.only(left: 16, top: 16),
+                    child: GridView.count(
+                      childAspectRatio: 3,
+                      crossAxisCount: 2,
+                      children: categorias
+                          .map(
+                            (categoria) => InkWell(
+                              child: itemCategoria(categoria, context),
+                              onTap: () async {
+                                //
+                                var appDir =
+                                    await getApplicationDocumentsDirectory();
+                                var dir = "${appDir.path}/$arqNome";
+
+                                // existe?
+                                var idCat = categoria['id'];
+
+                                // TODO salvar arquivo e dps salvar no banco
+                                File arq = await File(file.path).copy(dir).then(
+                                    (value) => db.insert('registro', {
+                                          'path': dir,
+                                          'nome': arqNome,
+                                          'idCategoria': idCat
+                                        }).then((value) => null));
+                                print(
+                                    "variavel arquivo inserido na categoria já existente");
+
+                                await buscar();
+                                Navigator.pop(context);
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                )
+              ],
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("Cancelar"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (c.text.isEmpty) return;
+                  var appDir = await getApplicationDocumentsDirectory();
+                  var dir = "${appDir.path}/$arqNome";
+
+                  // existe?
+                  var existe =
+                      await db.query('categoria', where: 'nome == "${c.text}"');
+                  int idCat;
+                  if (existe.length == 0) {
+                    print('categoria inserida');
+                    idCat = await db.insert('categoria', {'nome': c.text});
+                  } else
+                    idCat = existe[0]['id'];
+
+                  // TODO salvar arquivo e dps salvar no banco
+                  File arq = await File(file.path).copy(dir).then((value) => db
+                          .insert('registro', {
+                        'path': dir,
+                        'nome': arqNome,
+                        'idCategoria': idCat
+                      }).then((value) => null));
+                  print(
+                      "variavel arquivo inserido no banco e copiado para celular");
+
+                  await buscar();
+                  Navigator.pop(context);
+                },
+                child: Text("Salvar"),
+              )
+            ],
+          );
+        },
+      );
     } else {
       await showDialog(
         context: context,
@@ -76,21 +178,28 @@ class _MyAppState extends State<MyApp> {
 
   buscar() async {
     var db = await openDatabase('db.db');
-    var q = await db.query('registro');
-    print('Variavel q (select registro): ${q}');
-    if (q.length > 0) {
-      c.clear();
-      q.forEach(
-        (element) {
-          c.add(VideoPlayerController.file(
-            File(
-              element['path'],
-            ),
-          )..initialize());
-        },
-      );
-      setState(() {});
-    }
+
+    var q = await db.query('categoria');
+
+    print('Variavel await db.query("registro"): ${await db.query("registro")}');
+
+    categorias = q;
+    setState(() {});
+    // var q = await db.query('registro');
+    // print('Variavel q (select registro): ${q}');
+    // if (q.length > 0) {
+    //   c.clear();
+    //   q.forEach(
+    //     (element) {
+    //       c.add(VideoPlayerController.file(
+    //         File(
+    //           element['path'],
+    //         ),
+    //       )..initialize());
+    //     },
+    //   );
+    //   setState(() {});
+    // }
   }
 
   @override
@@ -99,48 +208,76 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
+  List<Map> categorias = [];
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            setState(() {
-              c.forEach((element) {
-                element.value.isPlaying ? element.pause() : element.play();
-              });
-            });
-          },
-          child: Icon(
-            c.length > 0
-                ? c[0].value.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow
-                : Icons.circle,
-          ),
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () {
+        //     setState(
+        //       () {
+        //         c.forEach(
+        //           (element) {
+        //             element.value.isPlaying ? element.pause() : element.play();
+        //           },
+        //         );
+        //       },
+        //     );
+        //   },
+        //   child: Icon(
+        //     c.length > 0
+        //         ? c[0].value.isPlaying
+        //             ? Icons.pause
+        //             : Icons.play_arrow
+        //         : Icons.circle,
+        //   ),
+        // ),
         appBar: AppBar(
           title: const Text('Pocket Storage'),
           centerTitle: true,
         ),
-        body: Center(
-          child: Column(
-            children: c != null
-                ? c
+        body: Container(
+          margin: EdgeInsets.only(top: 32, left: 32),
+          child: GridView.count(
+            childAspectRatio: 3,
+            crossAxisCount: 3,
+            children: categorias.length > 0
+                ? categorias
                     .map(
-                      (i) => Container(
-                        height: 50,
-                        width: 50,
-                        child: VideoPlayer(
-                          i,
-                        ),
+                      (categoria) => InkWell(
+                        child: itemCategoria(categoria, context),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Categoria(categoria),
+                            ),
+                          );
+                        },
                       ),
                     )
                     .toList()
-                : [Text('sem dados')],
+                : [
+                    Text(
+                      "Sem categorias!",
+                    ),
+                  ],
           ),
         ),
       ),
     );
   }
 }
+
+Widget itemCategoria(categoria, context) => Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        border: Border.all(),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        categoria['nome'],
+      ),
+    );
