@@ -66,10 +66,11 @@ class _MyAppState extends State<MyApp> {
       buscar();
     } else {
       await showDialog(
-          context: context,
-          builder: (c) => AlertDialog(
-                title: Text("Vídeo já está no dispositivo!"),
-              ));
+        context: context,
+        builder: (c) => AlertDialog(
+          title: Text("Vídeo já está no dispositivo!"),
+        ),
+      );
     }
   }
 
