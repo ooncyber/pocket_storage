@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +11,8 @@ import 'dart:async';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:video_player/video_player.dart';
+
+import 'package:http/http.dart' as http;
 
 class MyApp extends StatefulWidget {
   @override
@@ -67,74 +71,96 @@ class _MyAppState extends State<MyApp> {
     await buscar();
   }
 
-  salvarVideo(context, arqNome, file, db) async {
+  salvarVideo(context, arqNome, File file, db) async {
     TextEditingController c = TextEditingController();
-    await showDialog(
-      context: context,
-      builder: (context) {
-        print('Variavel categorias: ${categorias}');
-        return AlertDialog(
-          title: Text(
-              "Digite ou selecione a categoria para o vídeo ${arqNome.split('.')[0]}"),
-          content: Container(
-            width: 300,
-            height: 300,
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  child: TextField(
-                    focusNode: FocusNode()..requestFocus(),
-                    decoration: InputDecoration(
-                        labelText: "Digite o nome da categoria"),
-                    controller: c,
-                  ),
-                ),
-                Container(
-                  height: 200,
-                  width: 300,
-                  margin: EdgeInsets.all(16),
-                  child: GridView.count(
-                    childAspectRatio: 4,
-                    crossAxisCount: 2,
-                    children: categorias
-                        .map(
-                          (categoria) => InkWell(
-                            child: Container(
-                              child: itemCategoria(categoria, context),
-                              width: 100,
-                            ),
-                            onTap: () async {
-                              clicouNaTag(arqNome, categoria, file, db);
-                              Navigator.pop(context);
-                            },
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Cancelar"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (c.text.isEmpty) return;
-                clicouEmSalvar(arqNome, db, file, c);
-                Navigator.pop(context);
-              },
-              child: Text("Salvar"),
-            )
-          ],
-        );
-      },
-    );
+    // await showDialog(
+    //   context: context,
+    //   builder: (context) {
+    //     print('Variavel categorias: ${categorias}');
+    //     return AlertDialog(
+    //       title: Text(
+    //           "Digite ou selecione a categoria para o vídeo ${arqNome.split('.')[0]}"),
+    //       content: Container(
+    //         width: 300,
+    //         height: 300,
+    //         child: Column(
+    //           children: [
+    //             Container(
+    //               width: double.infinity,
+    //               child: TextField(
+    //                 focusNode: FocusNode()..requestFocus(),
+    //                 decoration: InputDecoration(
+    //                     labelText: "Digite o nome da categoria"),
+    //                 controller: c,
+    //               ),
+    //             ),
+    //             Container(
+    //               height: 200,
+    //               width: 300,
+    //               margin: EdgeInsets.all(16),
+    //               child: GridView.count(
+    //                 childAspectRatio: 4,
+    //                 crossAxisCount: 2,
+    //                 children: categorias
+    //                     .map(
+    //                       (categoria) => InkWell(
+    //                         child: Container(
+    //                           child: itemCategoria(categoria, context),
+    //                           width: 100,
+    //                         ),
+    //                         onTap: () async {
+    //                           clicouNaTag(arqNome, categoria, file, db);
+    //                           Navigator.pop(context);
+    //                         },
+    //                       ),
+    //                     )
+    //                     .toList(),
+    //               ),
+    //             ),
+    //           ],
+    //         ),
+    //       ),
+    //       actions: [
+    //         ElevatedButton(
+    //           onPressed: () {
+    //             Navigator.pop(context);
+    //           },
+    //           child: Text("Cancelar"),
+    //         ),
+    //         ElevatedButton(
+    //           onPressed: () async {
+    //             if (c.text.isEmpty) return;
+    //             clicouEmSalvar(arqNome, db, file, c);
+    //             Navigator.pop(context);
+    //           },
+    //           child: Text("Salvar"),
+    //         )
+    //       ],
+    //     );
+    //   },
+    // );
+
+    var url = Uri.parse('http://10.0.2.2:80');
+    var stream = http.ByteStream(file.openRead());
+
+    var request = http.MultipartRequest("POST", url);
+    // Map<String, String> headers = {
+    //   "Accept": "application/json",
+    //   "Authorization": "Bearer " + token
+    // };
+    // request.headers.addAll(headers);
+
+    var multipartFileSign = http.MultipartFile(
+        'file', stream, file.lengthSync(),
+        filename: arqNome);
+    request.files.add(multipartFileSign);
+
+    var response = await request.send();
+
+    print('Variavel response.statusCode: ${response.statusCode}');
+    response.stream.transform(utf8.decoder).listen((value) {
+      print(value);
+    });
   }
 
   salvar(SharedMediaFile file) async {
@@ -144,7 +170,7 @@ class _MyAppState extends State<MyApp> {
     var q = await db.query('registro', where: "nome == '$arqNome'");
     buscar();
     if (q.length == 0) {
-      salvarVideo(context, arqNome, file, db);
+      salvarVideo(context, arqNome, File(file.path), db);
     } else {
       await showDialog(
         context: context,
@@ -190,7 +216,11 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         floatingActionButton: FloatingActionButton(
-          onPressed: () async => await buscar(),
+          onPressed: () async {
+            var post = await http.post(Uri.parse('http://10.0.2.2:80'));
+            print('Variavel resp: ${post.body}');
+            await buscar();
+          },
           child: Icon(Icons.refresh),
         ),
         appBar: AppBar(
