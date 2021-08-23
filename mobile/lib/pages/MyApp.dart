@@ -63,12 +63,28 @@ class _MyAppState extends State<MyApp> {
 
     response.stream.transform(utf8.decoder).listen((value) {
       // armazenar resultado (req.file) no banco
-      print('Variavel value: ${value}');
+      // print('Variavel value: ${value}');
+      var dados = jsonDecode(value);
+      print('Variavel dados: ${dados}');
+      c.add(VideoPlayerController.network(dados['path']
+          .toString()
+          .replaceAll('http://localhost', 'http://10.0.0.2'))
+        ..initialize());
     });
   }
 
   Future<void> buscar() async {
-    var resp = await http.get(Uri.parse('http://10.0.2.2'));
+    var respo = await http.get(Uri.parse('http://10.0.2.2:80'));
+    List movies = jsonDecode(respo.body);
+    c.clear();
+    movies.forEach((element) {
+      print(
+          ': http://10.0.2.2/movies/${element.toString().replaceAll(' ', '%22')}');
+      c.add(VideoPlayerController.network(
+          'http://10.0.2.2/movies/' + element.toString().replaceAll(' ', '%20'))
+        ..initialize()
+        ..play());
+    });
     setState(() {});
   }
 
@@ -84,8 +100,6 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            var post = await http.post(Uri.parse('http://10.0.2.2:80'));
-            print('Variavel resp: ${post.body}');
             await buscar();
           },
           child: Icon(Icons.refresh),
@@ -104,37 +118,15 @@ class _MyAppState extends State<MyApp> {
         ),
         body: RefreshIndicator(
           onRefresh: () => buscar(),
-          child: Text("salve"),
-          // child: Container(
-          //   margin: EdgeInsets.all(16),
-          //   child: categorias.length > 0
-          //       ? GridView.count(
-          //           childAspectRatio: 3,
-          //           crossAxisCount: 3,
-          //           children: categorias
-          //               .map(
-          //                 (categoria) => InkWell(
-          //                   child: Container(
-          //                       margin: EdgeInsets.symmetric(horizontal: 16),
-          //                       child: itemCategoria(categoria, context)),
-          //                   onTap: () {
-          //                     Navigator.push(
-          //                       context,
-          //                       MaterialPageRoute(
-          //                         builder: (context) => Categoria(categoria),
-          //                       ),
-          //                     );
-          //                   },
-          //                 ),
-          //               )
-          //               .toList())
-          //       : Center(
-          //           child: Text(
-          //             "Sem categorias!",
-          //             textAlign: TextAlign.center,
-          //           ),
-          //         ),
-          // ),
+          child: Column(
+            children: c
+                .map((i) => Container(
+                      width: 100,
+                      height: 100,
+                      child: VideoPlayer(i),
+                    ))
+                .toList(),
+          ),
         ),
       ),
     );
