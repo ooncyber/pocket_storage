@@ -39,25 +39,48 @@ const upload = multer({
     })
 });
 
-server.get('/', (req, res) => {
-    var list ='';
-    fs.readdir('./uploads/', (err, files) => {
-        res.send(files);
-        // files.forEach(file => {
-        //     console.log(files);
-        // });
-    });
-})
+server.get('/', async (req, res) => {
+    // var list ='';
+    // fs.readdir('./uploads/', (err, files) => {
+    //     res.send(files);
+    //     // files.forEach(file => {
+    //     //     console.log(files);
+    //     // });
+    // });
+    return res.send(await knex('uploads').select('categoria').select('id').groupBy('categoria'));
+});
+
+server.get('/:categoria', async (req, res) => {
+    console.log('Variavel req.params: ', req.params)
+    return res.send(await knex('uploads').select().where({ categoria: req.params.categoria }))
+});
 
 
-server.post('/', upload.single('file'), (req, res, next) => {
+server.post('/', upload.single('file'), async (req, res, next) => {
     const { categoria } = JSON.parse(JSON.stringify(req.body));
-    const { filename, path } = req.file ? req.file : {};
+    if (!categoria)
+        return res.status(500).json({ msg: "Falta categoria", errno: 1 });
+    if (!req.file)
+        return res.status(500)
+
+
+    const { filename, path } = req.file;
 
     var reg = { categoria, path, filename };
 
-    knex('uploads').insert(reg);
-    res.send({ ...reg, path: 'http://' + SERVER_URL + '/' + path.replace('\\', '/') })
+
+    return knex('uploads').where({ filename }).then(async rows => {
+        if (rows.length == 0) {
+            console.log('inserido!');
+            await knex("uploads").insert(reg);
+            return res.send({ ...reg })
+        }
+        else {
+            console.log('tentativa de inserir duplicado');
+            var r = await knex("uploads").select().where({ filename });
+            return res.send(r);
+        }
+    });
 });
 
 server.get('/movies/:movieName', (req, res) => {
