@@ -1,5 +1,6 @@
 const router = require('express').Router();
-const fs = require('fs')
+const fs = require('fs');
+const downloadVideo = require('../util/downloadYoutube');
 router.get('/videos/:movieName', (req, res) => {
     const { movieName } = req.params;
     const movieFile = `./videos/${movieName}`;
@@ -30,5 +31,15 @@ router.get('/videos/:movieName', (req, res) => {
         stream.on('error', (streamErr) => res.end(streamErr));
     });
 });
+
+router.post('/videos', (req, res, next) => {
+    if (req.body.url)
+        next();
+    else
+        return res.status(400).json({ msg: "Informe a url" })
+}, async(req, res) => {
+    let resultado = await downloadVideo(req.body.url);
+    return res.send(resultado);
+})
 
 module.exports = router;

@@ -3,7 +3,6 @@ const knex = require('../db/db_util')
 configMulter = require('../multer/config')
 
 
-
 router.post('/', configMulter.single('file'), async (req, res, next) => {
     const { categoria } = JSON.parse(JSON.stringify(req.body));
     if (!categoria)

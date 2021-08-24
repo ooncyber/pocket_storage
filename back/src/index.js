@@ -13,8 +13,6 @@ server.use(cors());
 server.use(routes);
 
 
-
-
 server.listen(80, () => console.log(SERVER_URL));
 
 
