@@ -18,13 +18,14 @@ async function downloadVideo(urlPassada = '') {
 
         let d = await getInfo(end)
         var title = d.videoDetails.title.replace(/"/g, "");
+
         var path = p.join(__dirname, '../../videos/',title + '.mp4');
 
         let formato = d.formats.find(format => format.quality == 'hd720' && format.hasAudio)
         var pip = ytdl(urlPassada, formato != undefined ? { format: formato } : 'highest')
             .pipe(fs.createWriteStream(path));
         pip.on('finish', () => {
-            resolve({path: process.env.SERVER_URL+':'+process.env.PORT+process.env.VIDEO_FOLDER+'/'+title})
+            resolve({path: process.env.SERVER_URL+':'+process.env.PORT+process.env.VIDEO_FOLDER+'/'+title+'.mp4'})
         })
     })
 }
