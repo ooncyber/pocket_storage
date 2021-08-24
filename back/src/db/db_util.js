@@ -8,9 +8,9 @@ const knex = require('knex')({
     },
 });
 knex.schema
-    .hasTable('uploads').then(existe => {
+    .hasTable('uploads').then(async existe => {
         if (!existe)
-            knex.schema.createTable('uploads', table => {
+            await knex.schema.createTable('uploads', table => {
 
                 table.increments('id');
                 table.string('categoria');

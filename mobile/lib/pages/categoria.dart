@@ -33,14 +33,15 @@ class _CategoriaState extends State<Categoria> {
     // });
     // print('Variavel q: ${q}');
 
-    var regs = await http
-        .get(Uri.parse("http://10.0.2.2/${widget.categoria['categoria']}"));
+    var regs = await http.get(Uri.parse(
+        "http://10.0.2.2/categoria/${widget.categoria['categoria']}"));
     videos = List<Map>.from(jsonDecode(regs.body));
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    print('Variavel videos: ${videos}');
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoria['categoria']),
@@ -52,7 +53,7 @@ class _CategoriaState extends State<Categoria> {
         children: videos.map(
           (video) {
             var controller = VideoPlayerController.network(
-                "http://10.0.2.2/movies/${video['filename'].toString().replaceAll(' ', '%20')}")
+                "http://10.0.2.2/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
               ..initialize();
             return InkWell(
               onTap: () {

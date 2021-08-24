@@ -74,7 +74,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   salvarVideo(File file, String txtCategoria) async {
-    var url = Uri.parse('http://10.0.2.2:80');
+    var url = Uri.parse('http://10.0.2.2/uploadFile');
     var stream = http.ByteStream(file.openRead());
 
     var request = http.MultipartRequest("POST", url);
@@ -98,18 +98,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> buscar() async {
-    var respo = await http.get(Uri.parse('http://10.0.2.2'));
+    var respo = await http.get(Uri.parse('http://10.0.2.2/registros'));
     categorias = List<Map>.from(jsonDecode(respo.body));
-    // List movies = jsonDecode(respo.body);
-    // c.clear();
-    // movies.forEach((element) {
-    //   print(
-    //       ': http://10.0.2.2/movies/${element.toString().replaceAll(' ', '%22')}');
-    //   c.add(VideoPlayerController.network(
-    //       'http://10.0.2.2/movies/' + element.toString().replaceAll(' ', '%20'))
-    //     ..initialize()
-    //     ..play());
-    // });
+    print('Variavel categorias: ${categorias}');
     setState(() {});
   }
 
