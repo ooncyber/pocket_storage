@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const fs = require('fs');
-const downloadVideo = require('../util/downloadYoutube');
+const downloadVideo = require('../util/downloadYoutube'); 
+const knex = require("../db/db_util");
+
 router.get('/videos/:movieName', (req, res) => {
     const { movieName } = req.params;
     const movieFile = `./videos/${movieName}`;
@@ -37,7 +39,7 @@ router.post('/videos', (req, res, next) => {
         next();
     else
         return res.status(400).json({ msg: "Informe a url" })
-}, async(req, res) => {
+}, async (req, res) => {
     let resultado = await downloadVideo(req.body.url);
     return res.send(resultado);
 })

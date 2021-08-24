@@ -2,6 +2,8 @@ const fs = require('fs');
 const p = require('path')
 const { getInfo } = require('ytdl-core');
 const ytdl = require('ytdl-core');
+require('dotenv/config');
+
 YTDL_NO_UPDATE = false;
 // TypeScript: import ytdl from 'ytdl-core'; with --esModuleInterop
 // TypeScript: import * as ytdl from 'ytdl-core'; with --allowSyntheticDefaultImports
@@ -16,15 +18,13 @@ async function downloadVideo(urlPassada = '') {
 
         let d = await getInfo(end)
         var title = d.videoDetails.title.replace(/"/g, "");
-        console.log('Variavel p.join("../videos"): ', p.join(__dirname, "../../videos"))
         var path = p.join(__dirname, '../../videos/',title + '.mp4');
 
         let formato = d.formats.find(format => format.quality == 'hd720' && format.hasAudio)
         var pip = ytdl(urlPassada, formato != undefined ? { format: formato } : 'highest')
             .pipe(fs.createWriteStream(path));
-
         pip.on('finish', () => {
-            resolve({path: 'http://localhost/movies/'+title})
+            resolve({path: process.env.SERVER_URL+':'+process.env.PORT+process.env.VIDEO_FOLDER+'/'+title})
         })
     })
 }
