@@ -71,6 +71,53 @@ class _MyAppState extends State<MyApp> {
         });
       }
     });
+    // For sharing or opening urls/text coming from outside the app while the app is closed
+    _intentDataStreamSubscription =
+        ReceiveSharingIntent.getTextStream().listen((String value) async {
+      var c = TextEditingController();
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Novo vídeo baixado"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Digite o nome da categoria "),
+              TextField(
+                controller: c,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                if (c.text.isNotEmpty) {
+                  var r = await http.post(Uri.parse('http://10.0.2.2/videos'),
+                      headers: {
+                        'Content-type': 'application/json',
+                        'Accept': 'application/json',
+                      },
+                      body: json.encode({'url': value, 'categoria': c.text}));
+                  print('Variavel r: ${r.body}');
+                  Navigator.pop(context);
+                }
+              },
+              child: Text("Salvar"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancelar"),
+            ),
+          ],
+        ),
+      );
+      buscar();
+    }, onError: (err) {
+      print("getLinkStream error: $err");
+    });
   }
 
   salvarVideo(File file, String txtCategoria) async {

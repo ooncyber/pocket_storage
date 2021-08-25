@@ -15,18 +15,23 @@ async function downloadVideo(urlPassada = '') {
 
     return new Promise(async (resolve, reject) => {
         let end = urlPassada.indexOf('tu.be') == -1 ? urlPassada.substring(urlPassada.indexOf('v=') + 2, urlPassada.length) : urlPassada.substring(urlPassada.indexOf('be/') + 3, urlPassada.length)
+        try {
+            let d = await getInfo(end)
+            var title = d.videoDetails.title.replace(/"/g, "");
 
-        let d = await getInfo(end)
-        var title = d.videoDetails.title.replace(/"/g, "");
+            var path = p.join(__dirname, '../../videos/', title + '.mp4');
 
-        var path = p.join(__dirname, '../../videos/',title + '.mp4');
-
-        let formato = d.formats.find(format => format.quality == 'hd720' && format.hasAudio)
-        var pip = ytdl(urlPassada, formato != undefined ? { format: formato } : 'highest')
-            .pipe(fs.createWriteStream(path));
-        pip.on('finish', () => {
-            resolve({path: process.env.SERVER_URL+':'+process.env.PORT+process.env.VIDEO_FOLDER+'/'+title+'.mp4'})
-        })
+            let formato = d.formats.find(format => format.quality == 'hd720' && format.hasAudio)
+            var pip = ytdl(urlPassada, formato != undefined ? { format: formato } : 'highest')
+                .pipe(fs.createWriteStream(path));
+            pip.on('finish', () => {
+                resolve({ filename: title + '.mp4' })
+            })
+        }
+        catch (e) {
+            console.log('Variavel e: ', e)
+            reject(e)
+        }
     })
 }
 

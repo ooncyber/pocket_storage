@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const fs = require('fs');
-const downloadVideo = require('../util/downloadYoutube'); 
+const downloadVideo = require('../util/downloadYoutube');
 const knex = require("../db/db_util");
 
 router.get('/videos/:movieName', (req, res) => {
@@ -35,13 +35,32 @@ router.get('/videos/:movieName', (req, res) => {
 });
 
 router.post('/videos', (req, res, next) => {
-    if (req.body.url)
+    if (req.body.url && req.body.categoria)
         next();
-    else
-        return res.status(400).json({ msg: "Informe a url" })
+    else if (!req.body.url) {
+        res.status(401).json({ msg: 'informe a url' })
+    }
+    else if (!req.body.categoria) {
+        res.status(401).json({ msg: 'informe o lazer' })
+    }
 }, async (req, res) => {
     let resultado = await downloadVideo(req.body.url);
-    return res.send(resultado);
+    if (resultado) {
+        var reg = { categoria: req.body.categoria, filename: resultado.filename, path: 'videos/' + resultado.filename };
+        console.log('Variavel resultado: ', resultado)
+        knex('uploads').where({ filename: resultado.filename }).then(async rows => {
+            if (rows.length == 0) {
+                console.log('inserido!');
+                await knex("uploads").insert(reg);
+            }
+            else {
+                console.log('tentativa de inserir duplicado');
+                await knex("uploads").select().where({ filename: resultado.filename });
+            }
+        });
+        return res.send(reg);
+    }
+    return res.status(500)
 })
 
 module.exports = router;
