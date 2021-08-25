@@ -15,15 +15,6 @@ Widget appBarCustom(BuildContext context) {
           Icons.settings,
         ),
       ),
-      IconButton(
-        onPressed: () async {
-          SharedPreferences.getInstance()
-              .then((value) async => await value.remove('IP'));
-        },
-        icon: Icon(
-          Icons.delete,
-        ),
-      ),
     ],
   );
 }
@@ -53,6 +44,13 @@ Future<String> mostrarDialogServidor(context) async {
               }
             },
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(onPressed: () {}, child: Text("Salvar")),
+              ElevatedButton(onPressed: () {}, child: Text("Cancelar")),
+            ],
+          )
         ],
       ),
     ),

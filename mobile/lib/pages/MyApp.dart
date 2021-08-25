@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> {
   List<VideoPlayerController> c = [];
   List<Map> categorias = [];
 
-  String ip = 'http://10.0.2.2';
+  String ip = '10.0.2.2';
 
   @override
   void initState() {
@@ -161,6 +161,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> buscar() async {
+    print('Variavel ip: ${ip}');
     var respo = await http.get(Uri.parse(ip + '/registros'));
     categorias = List<Map>.from(jsonDecode(respo.body));
     setState(() {});
