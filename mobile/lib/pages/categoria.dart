@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:pocket_storage/pages/video_full.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
@@ -61,19 +62,21 @@ class _CategoriaState extends State<Categoria> {
         // children: [],
         children: videos.map(
           (video) {
-            var controller = VideoPlayerController.network(
-                "$ip/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
-              ..initialize();
             return InkWell(
               onTap: () {
-                controller.value.isPlaying
-                    ? controller.pause()
-                    : controller.play();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => VideoFull(
+                            url:
+                                "$ip/videos/${video['filename'].toString().replaceAll(' ', '%20')}")));
               },
               child: Container(
                 margin: EdgeInsets.all(8),
                 child: VideoPlayer(
-                  controller,
+                  VideoPlayerController.network(
+                      "$ip/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
+                    ..initialize(),
                 ),
               ),
             );

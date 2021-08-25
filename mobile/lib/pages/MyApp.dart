@@ -28,16 +28,15 @@ class _MyAppState extends State<MyApp> {
   List<VideoPlayerController> c = [];
   List<Map> categorias = [];
 
-  String ip = '10.0.2.2';
+  String ip = 'http://10.0.2.2';
 
   @override
   void initState() {
     super.initState();
-    SharedPreferences.getInstance().then((sp) {
+    SharedPreferences.getInstance().then((sp) async {
       var ipSp = sp.getString('IP');
-      if (ip == null) {
-        mostrarDialogServidor(context)
-            .then((value) => print('Variavel value: ${value}'));
+      if (ipSp == null) {
+        await mostrarDialogServidor(context);
       } else
         setState(() {
           ip = "http://$ipSp";

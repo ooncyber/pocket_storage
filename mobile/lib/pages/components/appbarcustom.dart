@@ -20,6 +20,13 @@ Widget appBarCustom(BuildContext context) {
 }
 
 Future<String> mostrarDialogServidor(context) async {
+  // testo se o 10.0.2.2 retorna true
+  var res = await http.get(Uri.parse('http://10.0.2.2'));
+  if (res.body == 'true') {
+    var sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setString('IP', '10.0.2.2');
+    return '';
+  }
   var c = TextEditingController();
   return await showDialog(
     context: context,
