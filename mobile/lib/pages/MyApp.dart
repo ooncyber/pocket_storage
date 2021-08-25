@@ -10,10 +10,13 @@ import 'package:pocket_storage/util/io.dart';
 import 'dart:async';
 
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:http/http.dart' as http;
+
+import 'components/appbarcustom.dart';
 
 class MyApp extends StatefulWidget {
   @override
@@ -25,9 +28,22 @@ class _MyAppState extends State<MyApp> {
   List<VideoPlayerController> c = [];
   List<Map> categorias = [];
 
+  String ip = 'http://10.0.2.2';
+
   @override
   void initState() {
     super.initState();
+    SharedPreferences.getInstance().then((sp) {
+      var ipSp = sp.getString('IP');
+      if (ip == null) {
+        mostrarDialogServidor(context)
+            .then((value) => print('Variavel value: ${value}'));
+      } else
+        setState(() {
+          ip = "http://$ipSp";
+        });
+    });
+    print('Variavel ip: ${ip}');
     buscar();
     // For sharing images coming from outside the app while the app is closed
     ReceiveSharingIntent.getInitialMedia().then((List<SharedMediaFile> value) {
@@ -93,7 +109,7 @@ class _MyAppState extends State<MyApp> {
             ElevatedButton(
               onPressed: () async {
                 if (c.text.isNotEmpty) {
-                  var r = await http.post(Uri.parse('http://10.0.2.2/videos'),
+                  var r = await http.post(Uri.parse(ip + '/videos'),
                       headers: {
                         'Content-type': 'application/json',
                         'Accept': 'application/json',
@@ -121,7 +137,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   salvarVideo(File file, String txtCategoria) async {
-    var url = Uri.parse('http://10.0.2.2/uploadFile');
+    var url = Uri.parse(ip + '/uploadFile');
     var stream = http.ByteStream(file.openRead());
 
     var request = http.MultipartRequest("POST", url);
@@ -145,9 +161,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> buscar() async {
-    var respo = await http.get(Uri.parse('http://10.0.2.2/registros'));
+    var respo = await http.get(Uri.parse(ip + '/registros'));
     categorias = List<Map>.from(jsonDecode(respo.body));
-    print('Variavel categorias: ${categorias}');
     setState(() {});
   }
 
@@ -167,18 +182,7 @@ class _MyAppState extends State<MyApp> {
           },
           child: Icon(Icons.refresh),
         ),
-        appBar: AppBar(
-          title: const Text('Pocket Storage'),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () {},
-              icon: Icon(
-                Icons.delete,
-              ),
-            ),
-          ],
-        ),
+        appBar: appBarCustom(context),
         body: RefreshIndicator(
             onRefresh: () => buscar(),
             child: categorias.length > 0

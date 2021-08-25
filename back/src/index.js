@@ -12,6 +12,9 @@ server.use(express.json());
 server.use(cors());
 server.use(routes);
 
+server.get("/", (req, res) =>
+    res.send(true));
+
 
 server.listen(80, () => console.log(SERVER_URL));
 

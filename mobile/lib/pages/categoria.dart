@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 
 class Categoria extends StatefulWidget {
@@ -16,10 +17,18 @@ class Categoria extends StatefulWidget {
 
 class _CategoriaState extends State<Categoria> {
   List<Map> videos = [];
+  String ip = '';
+
   @override
   void initState() {
     super.initState();
-    carregar();
+    SharedPreferences.getInstance().then((sp) {
+      var ipSp = sp.getString('IP');
+      setState(() {
+        ip = "http://$ipSp";
+      });
+      carregar();
+    });
   }
 
   void carregar() async {
@@ -33,8 +42,8 @@ class _CategoriaState extends State<Categoria> {
     // });
     // print('Variavel q: ${q}');
 
-    var regs = await http.get(Uri.parse(
-        "http://10.0.2.2/categoria/${widget.categoria['categoria']}"));
+    var regs = await http
+        .get(Uri.parse("$ip/categoria/${widget.categoria['categoria']}"));
     videos = List<Map>.from(jsonDecode(regs.body));
     setState(() {});
   }
@@ -53,7 +62,7 @@ class _CategoriaState extends State<Categoria> {
         children: videos.map(
           (video) {
             var controller = VideoPlayerController.network(
-                "http://10.0.2.2/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
+                "$ip/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
               ..initialize();
             return InkWell(
               onTap: () {
