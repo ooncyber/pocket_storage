@@ -9,7 +9,7 @@ Widget appBarCustom(BuildContext context) {
     actions: [
       IconButton(
         onPressed: () async {
-          mostrarDialogServidor(context);
+          await mostrarDialogServidor(context);
         },
         icon: Icon(
           Icons.settings,
@@ -21,45 +21,51 @@ Widget appBarCustom(BuildContext context) {
 
 Future<String> mostrarDialogServidor(context) async {
   // testo se o 10.0.2.2 retorna true
-  var res = await http.get(Uri.parse('http://10.0.2.2'));
-  if (res.body == 'true') {
+  var res = await http
+      .get(Uri.parse('http://10.0.2.2'))
+      .timeout(Duration(seconds: 3))
+      .then((value) async {
     var sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.setString('IP', '10.0.2.2');
     return '';
-  }
-  var c = TextEditingController();
-  return await showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text("Defina a url do servidor"),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: c,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: "Digite o endereço IP do servidor",
+  }).catchError((e) async {
+    var c = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Defina a url do servidor"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: c,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: "Digite o endereço IP do servidor",
+              ),
+              onSubmitted: (v) async {
+                print('Variavel v: ${v}');
+                var res = await http.get(Uri.parse('http://$v'));
+                print('Variavel res.body: ${res.body}');
+                if (res.body == 'true') {
+                  var sharedPreferences = await SharedPreferences.getInstance();
+                  await sharedPreferences.setString('IP', v);
+                  Navigator.pop(context, v);
+                }
+              },
             ),
-            onSubmitted: (v) async {
-              var res = await http.get(Uri.parse('http://$v'));
-              print('Variavel res.body: ${res.body}');
-              if (res.body == 'true') {
-                var sharedPreferences = await SharedPreferences.getInstance();
-                sharedPreferences.setString('IP', v);
-                Navigator.pop(context, v);
-              }
-            },
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(onPressed: () {}, child: Text("Salvar")),
-              ElevatedButton(onPressed: () {}, child: Text("Cancelar")),
-            ],
-          )
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(onPressed: () {}, child: Text("Salvar")),
+                ElevatedButton(onPressed: () {}, child: Text("Cancelar")),
+              ],
+            )
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  });
+
+  var c = TextEditingController();
 }
