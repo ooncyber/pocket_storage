@@ -29,7 +29,7 @@ testar(String v) async {
   }
 }
 
-Future<String> mostrarDialogServidor(context) async {
+mostrarDialogServidor(context) async {
   // testo se o 10.0.2.2 retorna true
   var res = await http
       .get(Uri.parse('http://10.0.2.2'))

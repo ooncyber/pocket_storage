@@ -69,13 +69,13 @@ class _CategoriaState extends State<Categoria> {
                     MaterialPageRoute(
                         builder: (context) => VideoFull(
                             url:
-                                "$ip/videos/${video['filename'].toString().replaceAll(' ', '%20')}")));
+                                "$ip/public/videos/${video['filename'].toString().replaceAll(' ', '%20')}")));
               },
               child: Container(
                 margin: EdgeInsets.all(8),
                 child: VideoPlayer(
                   VideoPlayerController.network(
-                      "$ip/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
+                      "$ip/public/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
                     ..initialize(),
                 ),
               ),

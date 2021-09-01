@@ -1,17 +1,14 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:path_provider/path_provider.dart';
 import 'package:pocket_storage/pages/categoria.dart';
 import 'package:pocket_storage/util/io.dart';
 import 'dart:async';
 
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:video_player/video_player.dart';
 
 import 'package:http/http.dart' as http;
@@ -28,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   List<VideoPlayerController> c = [];
   List<Map> categorias = [];
 
-  String ip = 'http://10.0.2.2';
+  String ip = '10.0.2.2';
 
   @override
   void initState() {
@@ -37,10 +34,19 @@ class _MyAppState extends State<MyApp> {
       var ipSp = sp.getString('IP');
       if (ipSp == null) {
         await mostrarDialogServidor(context);
-      } else
-        setState(() {
-          ip = "http://$ipSp";
+      } else {
+        http
+            .get(Uri.parse(ipSp))
+            .timeout(Duration(seconds: 3))
+            .then((value) async {
+          setState(() {
+            ip = ipSp;
+          });
+          return '';
+        }).catchError((e) async {
+          await mostrarDialogServidor(context);
         });
+      }
     });
     print('Variavel ip: ${ip}');
     buscar();
@@ -160,8 +166,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> buscar() async {
-    print('Variavel ip: ${ip}');
-    var respo = await http.get(Uri.parse(ip + '/registros'));
+    var sp = await SharedPreferences.getInstance();
+
+    setState(() {
+      ip = sp.getString("IP");
+    });
+    var respo = await http.get(Uri.parse('http://' + ip + '/registros'));
     categorias = List<Map>.from(jsonDecode(respo.body));
     setState(() {});
   }
