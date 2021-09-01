@@ -4,10 +4,74 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id='title'>Index</title>
 </head>
+
+
+<body>
+    <div id="app">
+        <h3>Vídeos</h3>
+        <ul>
+            <li v-for='i in videosDiretos'>
+                <!-- {{i}} -->
+                <a :href="'/public/videos/'+i">{{i}}</a>
+            </li>
+        </ul>
+        <h3 v-if='listaPastas.length>0'>Pastas</h3>
+        <ul>
+            <li v-for='i in listaPastas'>
+                <!-- {{i}} -->
+                <a :href="'/html/'+i">{{i}}</a>
+            </li>
+        </ul>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 <script>
+    var app = new Vue({
+        el: '#app',
+        data:
+        {
+            message: 'oi',
+            videosDiretos: [],
+            videosComPastas: [],
+            listaPastas: []
+        },
+        methods: {
+            async iniciar() {
+                var url = window.location.href;
+                if (url.endsWith('html') || url.endsWith('html/')) {
+
+                    var a = await fetch('/videos')
+                    var list = await a.json();
+                    this.videosDiretos = list.filter(i => i.indexOf('/') == -1)
+                    // console.log('Variavel this.avideosDiretos: ', this.videosDiretos)
+                    // console.log('Variavel list: ', list)
+
+                    this.videosComPastas = list.filter(i => i.indexOf('/') != -1);
+                    this.videosComPastas.forEach(video => {
+                        let pasta = video.substring(0, video.indexOf('/'))
+                        console.log('Variavel pasta: ', pasta)
+                        if (this.listaPastas.some(i => i == pasta))
+                            return
+                        else
+                            this.listaPastas.push(pasta);
+                    });
+                }
+                else {
+                    var pasta = url.substring(url.indexOf('html/') + 5, url.length);
+                    console.log('Variavel pasta: ', pasta)
+                    var a = await fetch('/videos/pasta/'+pasta);
+                    this.videosDiretos = await a.json()
+                }
+            }
+        },
+        created: async function () {
+            this.iniciar();
+        }
+    })
     async function onload() {
         // console.log('Variavel window.location.href: ', window.location.href)
         var url = window.location.href;
@@ -38,7 +102,7 @@
 
         }
         else {
-            div.innerHTML+=`<a><h3 onclick='history.back()'>Voltar</h3></a>`;
+            div.innerHTML += `<a><h3 onclick='history.back()'>Voltar</h3></a>`;
             var pasta = url.substring(url.indexOf('html/') + 5, url.length);
             var a = await fetch('/videos/pasta/' + pasta);
             var list = await a.json();
@@ -57,11 +121,5 @@
 
 
 </script>
-
-<body onload="onload()">
-    <div id="main">
-
-    </div>
-</body>
 
 </html>
