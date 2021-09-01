@@ -19,6 +19,16 @@ Widget appBarCustom(BuildContext context) {
   );
 }
 
+testar(String v) async {
+  print('Variavel v: ${v}');
+  var res = await http.get(Uri.parse('http://$v'));
+  print('Variavel res.body: ${res.body}');
+  if (res.body == 'true') {
+    var sharedPreferences = await SharedPreferences.getInstance();
+    await sharedPreferences.setString('IP', v);
+  }
+}
+
 Future<String> mostrarDialogServidor(context) async {
   // testo se o 10.0.2.2 retorna true
   var res = await http
@@ -38,27 +48,27 @@ Future<String> mostrarDialogServidor(context) async {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              controller: c,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: "Digite o endereço IP do servidor",
-              ),
-              onSubmitted: (v) async {
-                print('Variavel v: ${v}');
-                var res = await http.get(Uri.parse('http://$v'));
-                print('Variavel res.body: ${res.body}');
-                if (res.body == 'true') {
-                  var sharedPreferences = await SharedPreferences.getInstance();
-                  await sharedPreferences.setString('IP', v);
-                  Navigator.pop(context, v);
-                }
-              },
-            ),
+                controller: c,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: "Digite o endereço IP do servidor",
+                ),
+                onSubmitted: (v) async {
+                  testar(v);
+                }),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                ElevatedButton(onPressed: () {}, child: Text("Salvar")),
-                ElevatedButton(onPressed: () {}, child: Text("Cancelar")),
+                ElevatedButton(
+                    onPressed: () {
+                      if (c.text.isNotEmpty) testar(c.text);
+                    },
+                    child: Text("Salvar")),
+                ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text("Cancelar")),
               ],
             )
           ],
