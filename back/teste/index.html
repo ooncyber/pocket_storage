@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id='title'>Index</title>
+</head>
+<script>
+    async function onload() {
+        // console.log('Variavel window.location.href: ', window.location.href)
+        var url = window.location.href;
+        var div = document.getElementById("main")
+        if (url.endsWith('html') || url.endsWith('html/')) {
+            // document.getElementById('main').innerHTML = 'fa'
+            var a = await fetch('/videos')
+            var list = await a.json();
+            var videosDiretos = list.filter(i => i.indexOf('/') == -1)
+            videosDiretos.forEach(i => {
+                var html = `<li><a href='public/videos/${i}'>${i.substring(i.indexOf('.'), 3)}</a></li>`;
+                div.innerHTML += html;
+            });
+
+            var videosComPastas = list.filter(i => i.indexOf('/') != -1)
+            var listaPastas = [];
+            videosComPastas.forEach(i => {
+                let pasta = i.substring(0, i.indexOf('/'));
+                // console.log('Variavel pasta: ', pasta)
+                if (listaPastas.some(i => i == pasta))
+                    return;
+                else
+                    listaPastas.push(pasta);
+            });
+
+            div.innerHTML += `<br><h3>Pastas</h3><br>`;
+            listaPastas.forEach(i => div.innerHTML += `<a href='/html/${i}/'>${i}</a>`)
+
+        }
+        else {
+            div.innerHTML+=`<a><h3 onclick='history.back()'>Voltar</h3></a>`;
+            var pasta = url.substring(url.indexOf('html/') + 5, url.length);
+            var a = await fetch('/videos/pasta/' + pasta);
+            var list = await a.json();
+            if (list == []) {
+                alert("Sem vídeos nessa pasta");
+                window.location.replace("http://localhost/html")
+            }
+            list.forEach(i => {
+                var html = `<li><a href='/public/videos/${i}'>${i.substring(i.indexOf('.'), 3)}</a></li>`;
+                div.innerHTML += html;
+            });
+
+
+        }
+    }
+
+
+</script>
+
+<body onload="onload()">
+    <div id="main">
+
+    </div>
+</body>
+
+</html>
