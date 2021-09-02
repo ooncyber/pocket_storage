@@ -1,8 +1,11 @@
+const { getRegistrosId } = require('../model/registros');
+
 const router = require('express').Router();
-const knex = require("../db/db_util");
 
 router.get('/registros', async (req, res) => {
-    return res.send(await knex('uploads').select('categoria').select('id').groupBy('categoria'));
+    return getRegistrosId().then(e => res.send(e)).catch(e=>res.status(500).send(e))
 });
+
+
 
 module.exports = router;
