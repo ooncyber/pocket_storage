@@ -1,5 +1,5 @@
 const knex = require("../db/db_util");
-function getRegistrosId() {
+function getCategoriasId() {
     return new Promise(async (resolve, reject) => {
         try {
             resolve(await knex('uploads').select('categoria').select('id').groupBy('categoria'));
@@ -10,5 +10,5 @@ function getRegistrosId() {
 }
 
 module.exports = {
-    getRegistrosId
+    getCategoriasId
 }

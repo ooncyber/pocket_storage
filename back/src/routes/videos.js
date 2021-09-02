@@ -41,7 +41,6 @@ router.post('/videos', (req, res, next) => {
     let resultado = await downloadVideo(req.body.url);
     if (resultado) {
         var reg = { categoria: req.body.categoria, filename: resultado.filename, path: 'videos/' + resultado.filename };
-        console.log('Variavel resultado: ', resultado)
         knex('uploads').where({ filename: resultado.filename }).then(async rows => {
             if (rows.length == 0) {
                 console.log('inserido!');

@@ -7,25 +7,42 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id='title'>Index</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
 </head>
 
 
 <body>
-    <div id="app">
-        <h3>Vídeos</h3>
-        <ul>
-            <li v-for='i in videosDiretos'>
-                <!-- {{i}} -->
-                <a :href="'/public/videos/'+i">{{i}}</a>
-            </li>
-        </ul>
-        <h3 v-if='listaPastas.length>0'>Pastas</h3>
-        <ul>
-            <li v-for='i in listaPastas'>
-                <!-- {{i}} -->
-                <a :href="'/html/'+i">{{i}}</a>
-            </li>
-        </ul>
+    <div id="app" class='container'>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Categorias</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item" v-for='i, index in listaCategorias' :class="{active: indexAtivo == index}">
+                        <a class="nav-link" @click='buscar(i); indexAtivo = i' href="#">{{i.categoria}} <span class="sr-only">(current)</span></a>
+                    </li>
+
+            </div>
+        </nav>
+        <div v-if='videos.length > 0'>
+
+            <div v-for='i in videos' :key='i.filename' class="card  mb-5">
+                <video controls>
+                    <source :src="'public/videos/'+i.filename" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="card-body">
+                    <h5 class="card-title">{{i.filename}}</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the
+                        card's content.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
@@ -35,90 +52,23 @@
         data:
         {
             message: 'oi',
-            videosDiretos: [],
-            videosComPastas: [],
-            listaPastas: []
+            listaCategorias: [],
+            videos: [],
+            indexAtivo: -1
         },
         methods: {
             async iniciar() {
-                var url = window.location.href;
-                if (url.endsWith('html') || url.endsWith('html/')) {
-
-                    var a = await fetch('/videos')
-                    var list = await a.json();
-                    this.videosDiretos = list.filter(i => i.indexOf('/') == -1)
-                    // console.log('Variavel this.avideosDiretos: ', this.videosDiretos)
-                    // console.log('Variavel list: ', list)
-
-                    this.videosComPastas = list.filter(i => i.indexOf('/') != -1);
-                    this.videosComPastas.forEach(video => {
-                        let pasta = video.substring(0, video.indexOf('/'))
-                        console.log('Variavel pasta: ', pasta)
-                        if (this.listaPastas.some(i => i == pasta))
-                            return
-                        else
-                            this.listaPastas.push(pasta);
-                    });
-                }
-                else {
-                    var pasta = url.substring(url.indexOf('html/') + 5, url.length);
-                    console.log('Variavel pasta: ', pasta)
-                    var a = await fetch('/videos/pasta/'+pasta);
-                    this.videosDiretos = await a.json()
-                }
+                this.listaCategorias = await (await fetch('/categorias')).json();
+            },
+            async buscar(i) {
+                this.videos = await (await fetch("/categorias/" + i.categoria)).json();
+                console.log(`Variavel this.videos: `, this.videos)
             }
         },
-        created: async function () {
+        created: function () {
             this.iniciar();
         }
     })
-    async function onload() {
-        // console.log('Variavel window.location.href: ', window.location.href)
-        var url = window.location.href;
-        var div = document.getElementById("main")
-        if (url.endsWith('html') || url.endsWith('html/')) {
-            // document.getElementById('main').innerHTML = 'fa'
-            var a = await fetch('/videos')
-            var list = await a.json();
-            var videosDiretos = list.filter(i => i.indexOf('/') == -1)
-            videosDiretos.forEach(i => {
-                var html = `<li><a href='public/videos/${i}'>${i.substring(i.indexOf('.'), 3)}</a></li>`;
-                div.innerHTML += html;
-            });
-
-            var videosComPastas = list.filter(i => i.indexOf('/') != -1)
-            var listaPastas = [];
-            videosComPastas.forEach(i => {
-                let pasta = i.substring(0, i.indexOf('/'));
-                // console.log('Variavel pasta: ', pasta)
-                if (listaPastas.some(i => i == pasta))
-                    return;
-                else
-                    listaPastas.push(pasta);
-            });
-
-            div.innerHTML += `<br><h3>Pastas</h3><br>`;
-            listaPastas.forEach(i => div.innerHTML += `<a href='/html/${i}/'>${i}</a>`)
-
-        }
-        else {
-            div.innerHTML += `<a><h3 onclick='history.back()'>Voltar</h3></a>`;
-            var pasta = url.substring(url.indexOf('html/') + 5, url.length);
-            var a = await fetch('/videos/pasta/' + pasta);
-            var list = await a.json();
-            if (list == []) {
-                alert("Sem vídeos nessa pasta");
-                window.location.replace("http://localhost/html")
-            }
-            list.forEach(i => {
-                var html = `<li><a href='/public/videos/${i}'>${i.substring(i.indexOf('.'), 3)}</a></li>`;
-                div.innerHTML += html;
-            });
-
-
-        }
-    }
-
 
 </script>
 

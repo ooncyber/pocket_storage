@@ -3,7 +3,7 @@ configMulter = require('../multer/config')
 const { uploadFile } = require("../model/file");
 
 
-router.post('/uploadFile', configMulter.single('file'), async (req, res, next) =>
+router.post('/uploadFile', configMulter.single('file', ), async (req, res, next) =>
     uploadFile(req).then(r => res.send(r)).catch(err => res.status(400).send(err)));
 
 
