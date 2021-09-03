@@ -4,57 +4,111 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id='title'>Index</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
         integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+
 </head>
 
 
 <body>
-    <div id="app" class='container'>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Categorias</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    <div id="app">
+        <v-app>
+            <v-main>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item" v-for='i, index in listaCategorias' :class="{active: indexAtivo == index}">
-                        <a class="nav-link" @click='buscar(i); indexAtivo = i' href="#">{{i.categoria}} <span class="sr-only">(current)</span></a>
-                    </li>
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <a class="navbar-brand" href="#">Categodrias</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-            </div>
-        </nav>
-        <div v-if='videos.length > 0'>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item" v-for='i, index in listaCategorias'
+                                :class="{active: indexAtivo == index}">
+                                <a class="nav-link" @click='buscar(i); indexAtivo = i' href="#">{{i.categoria}} <span
+                                        class="sr-only">(current)</span></a>
+                            </li>
+                        </ul>
+                        <div>
+                            <button class="btn btn-primary" @click='dialog = true'>
+                                <i class="bi bi-plus-circle"></i> Adicionar
+                            </button>
+                        </div>
+                    </div>
+                </nav>
 
-            <div v-for='i in videos' :key='i.filename' class="card  mb-5">
-                <video controls>
-                    <source :src="'public/videos/'+i.filename" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                <div class="card-body">
-                    <h5 class="card-title">{{i.filename}}</h5>
-                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the
-                        card's content.</p>
+                <v-dialog v-model="dialog" width="500">
+                    <v-card>
+                        <v-card-title class="text-h5 grey lighten-2">
+                            Novo vídeo
+                        </v-card-title>
+
+                        <v-card-text>
+                            <template>
+                                <v-file-input accept=".mp4" label="Selecione o vídeo"></v-file-input>
+                                <p>ou</p>
+
+                            </template>
+                        </v-card-text>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="primary" text @click="dialog = false">
+                                I accept
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+
+
+                <div v-if='videos.length > 0'>
+
+                    <div v-for='i in videos' :key='i.filename' class="card  mb-5">
+                        <video controls>
+                            <source :src="'public/videos/'+i.filename" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="card-body">
+                            <h5 class="card-title">{{i.filename}}</h5>
+                            <p class="card-text">Some quick example text to build on the card title and make up the bulk
+                                of
+                                the
+                                card's content.</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+        </v-app>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 <script>
     var app = new Vue({
         el: '#app',
+        vuetify: new Vuetify(),
         data:
         {
             message: 'oi',
             listaCategorias: [],
             videos: [],
-            indexAtivo: -1
+            indexAtivo: -1,
+            dialog: false
         },
         methods: {
             async iniciar() {

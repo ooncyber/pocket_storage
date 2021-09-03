@@ -22,7 +22,6 @@ router.get("/videos/pasta/:pasta", (req, res) => {
         return res.send(files.map(i => i.replace('videos/', '')));
     });
 })
-console.log('Variavel path.resolve(__dirname+): ', path.resolve(''))
 
 router.get('/html*', (req, res) => {
     res.sendFile(path.resolve('teste') + '/index.html')
@@ -32,6 +31,7 @@ router.post('/videos', (req, res, next) => {
     if (req.body.url && req.body.categoria)
         next();
     else if (!req.body.url) {
+        console.log(`Variavel req.body: `, req.body)
         res.status(401).json({ msg: 'informe a url' })
     }
     else if (!req.body.categoria) {

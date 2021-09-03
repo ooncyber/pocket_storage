@@ -171,7 +171,8 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       ip = sp.getString("IP");
     });
-    var respo = await http.get(Uri.parse('http://' + ip + '/registros'));
+    print('Variavel ip: ${ip}');
+    var respo = await http.get(Uri.parse('http://' + ip + '/categorias'));
     categorias = List<Map>.from(jsonDecode(respo.body));
     setState(() {});
   }

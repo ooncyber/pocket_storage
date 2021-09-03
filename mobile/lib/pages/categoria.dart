@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -44,14 +43,15 @@ class _CategoriaState extends State<Categoria> {
     // print('Variavel q: ${q}');
 
     var regs = await http
-        .get(Uri.parse("$ip/categoria/${widget.categoria['categoria']}"));
+        .get(Uri.parse("$ip/categorias/${widget.categoria['categoria']}"));
+    print('Variavel ip: ${ip}');
     videos = List<Map>.from(jsonDecode(regs.body));
+    print('Variavel videos: ${videos}');
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    print('Variavel videos: ${videos}');
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.categoria['categoria']),
@@ -73,11 +73,9 @@ class _CategoriaState extends State<Categoria> {
               },
               child: Container(
                 margin: EdgeInsets.all(8),
-                child: VideoPlayer(
-                  VideoPlayerController.network(
-                      "$ip/public/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
-                    ..initialize(),
-                ),
+                child: VideoPlayer(VideoPlayerController.network(
+                    "$ip/public/videos/${video['filename'].toString().replaceAll(' ', '%20')}")
+                  ..initialize()),
               ),
             );
           },

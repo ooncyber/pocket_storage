@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan')
+
 const routes = require('./routes/index.js')
+
+
 require('dns').lookup(require('os').hostname(), function (err, add, fam) {
-    console.log( add);
+    console.log(add);
 })
 require('dotenv/config');
 
