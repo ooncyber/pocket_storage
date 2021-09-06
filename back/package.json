@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js "
+    "start": "nodemon src/index.js ",
+    "start2": "start lt --port 80 --subdomain tesca && node src/index.js "
   },
   "author": "",
   "license": "ISC",
@@ -17,10 +18,10 @@
     "ytdl-core": "^4.9.1"
   },
   "devDependencies": {
-    "morgan": "^1.10.0",
     "dotenv": "^10.0.0",
     "glob": "^7.1.7",
     "localtunnel": "^2.0.1",
+    "morgan": "^1.10.0",
     "nodemon": "^2.0.12",
     "pm2": "^5.1.1"
   }
