@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon src/index.js ",
-    "start2": "start lt --port 80 --subdomain tesca && node src/index.js "
+    "lt": "lt --port 80 --subdomain tescaa "
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "dotenv": "^10.0.0",
-    "glob": "^7.1.7",
     "localtunnel": "^2.0.1",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.12",
