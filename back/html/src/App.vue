@@ -27,21 +27,30 @@
     </v-app-bar>
 
     <v-main>
-      <v-container v-for="(video, index) of videos" :key="index">
-        <v-row>
-          <v-col>{{ video.filename }}</v-col>
-        </v-row>
-        <v-row>
-          <v-col>
-            <div class="embed-responsive embed-responsive-16by9">
-              <video
-                controls
-                :src="server_url + '/public/' + video.path"
-              ></video>
-            </div>
-          </v-col>
-        </v-row>
-      </v-container>
+      <template v-for="(video, index) of videos">
+        <v-container v-if="video.path.indexOf('.mp4') != -1" :key="index">
+          <v-row>
+            <v-col>{{ video.filename }}</v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <div class="embed-responsive embed-responsive-16by9">
+                <video
+                  controls
+                  :src="server_url + '/public/' + video.path"
+                ></video>
+              </div>
+            </v-col>
+          </v-row>
+        </v-container>
+        <img
+          v-else
+          :src="server_url + '/public/' + video.path"
+          alt=""
+          :key="index"
+          class="border"
+        />
+      </template>
     </v-main>
   </v-app>
 </template>
@@ -66,6 +75,7 @@ export default {
   },
   methods: {
     async buscar(i) {
+      console.log("buscar acionado");
       this.videos = await (
         await fetch(this.server_url + "/categorias/" + i.categoria)
       ).json();

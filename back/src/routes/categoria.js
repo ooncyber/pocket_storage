@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const knex = require("../db/db_util");
-const { getCategoriasId } = require('../models/categorias');
 const { CategoriaService } = require('../services/categoriaService');
 
 router.get('/categorias/:categoria', async (req, res) => {
