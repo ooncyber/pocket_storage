@@ -12,7 +12,7 @@ router.get('/videos', async (req, res) => {
     return res.json(await knex('uploads').select())
 });
 
-router.use('/html', express.static(path.resolve('html/dist/')));
+router.use('/html', express.static(path.resolve('html/dist')));
 
 router.post('/videos', (req, res, next) => {
     if (req.body.url && req.body.categoria)
