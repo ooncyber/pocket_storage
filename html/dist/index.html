@@ -185,14 +185,15 @@
                     }
                 }
             },
-        },
-        async buscar(i) {
+            async buscar(i) {
             console.log("buscar acionado");
             this.videos = await (
                 await fetch(this.server_url + "/categorias/" + i.categoria)
             ).json();
             console.log(`Variavel this.videos: `, this.videos);
         },
+        },
+        
     })
 </script>
 
